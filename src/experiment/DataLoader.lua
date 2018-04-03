@@ -5,8 +5,8 @@ require 'xlua'
 
 
 
-
-
+gmask=torch.Tensor();
+gmask:resize(4, 1, g_input_height, g_input_width);
 
 local DataLoader = torch.class('DataLoader')
 
@@ -80,12 +80,12 @@ function DataLoader:load_indices( depth_indices)
         -- read the input image
         color[{i,{}}]:copy(c);    -- Note that the image read is in the range of 0~1
         normal[{i,{}}]:copy(n);
-
+        gmask[{i,{}}]:copy(m)    
         --mask[{i,{}}]:copy(image.load(self.relative_depth_filename .. m));  
 
         
     end       
-
+    
 
     return color:cuda(), normal:cuda()
 end

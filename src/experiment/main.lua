@@ -3,7 +3,7 @@ require('optim')
 require('os')
 require('cunn')
 require('paths')
-
+require('debug')
 
 cmd = torch.CmdLine()
 cmd:option('-m', 'hourglass3', 'model file definition')
@@ -28,8 +28,7 @@ else
     paths.dofile('./DataLoader.lua')
 end
 paths.dofile('load_data.lua')
-local train_loader = TrainDataLoader()
-
+train_loader = TrainDataLoader()
 mysum=0;
 
 ----------to modify
@@ -96,17 +95,14 @@ g_params, g_grad_params = g_model:getParameters()
 
 
 local function default_feval(current_params)
-	local batch_input, batch_target = train_loader:load_next_batch(g_args.bs)
-
+    local batch_input, batch_target = train_loader:load_next_batch(g_args.bs)
     -- reset grad_params
     g_grad_params:zero()    
-
     --forward & backward
     local batch_output = g_model:forward(batch_input)    
     local batch_loss = g_criterion:forward(batch_output, batch_target)
     local dloss_dx = g_criterion:backward(batch_output, batch_target)
     g_model:backward(batch_input, dloss_dx)    
-
 
     collectgarbage()
 
