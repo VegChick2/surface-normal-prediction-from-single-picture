@@ -1,6 +1,6 @@
 require 'paths'
 paths.dofile('layers/inception_new.lua')
-
+paths.dofile('world_coord_to_normal.lua')
 
 function get_model()
     require 'cudnn'  
