@@ -14,7 +14,6 @@ cmd:option('-mt', 10000, 'Model saving interval (iterations)')
 cmd:option('-et', 3000, 'Model evaluation interval (iterations)')
 cmd:option('-lr', 1e-2, 'Learning rate')
 cmd:option('-t_depth_file','','Training file for relative depth')
-cmd:option('-v_depth_file','','Validation file for relative depth')
 cmd:option('-rundir', '', 'Running directory')
 cmd:option('-ep', 10, 'Epochs')
 cmd:option('-start_from','', 'Start from previous model')
@@ -25,14 +24,11 @@ g_args = cmd:parse(arg)
 -- Data Loader
 if g_args.diw then
     paths.dofile('./DataLoader_DIW.lua')
-    require('./validation_crit/validate_crit_DIW')
 else
     paths.dofile('./DataLoader.lua')
-    require('./validation_crit/validate_crit1')
 end
 paths.dofile('load_data.lua')
 local train_loader = TrainDataLoader()
-local valid_loader = ValidDataLoader()
 
 
 
@@ -166,5 +162,4 @@ end
 -- evaluate(g_model, g_args.bs, valid_loader)
 lfile:close()
 train_loader:close()
-valid_loader:close()
 save_model(g_model, g_args.rundir, g_args.it, config)
