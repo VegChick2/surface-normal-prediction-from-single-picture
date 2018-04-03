@@ -30,7 +30,7 @@ end
 paths.dofile('load_data.lua')
 local train_loader = TrainDataLoader()
 
-
+mysum=0;
 
 ----------to modify
 if g_args.it == 0 then

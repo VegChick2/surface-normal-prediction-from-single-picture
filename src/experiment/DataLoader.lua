@@ -46,23 +46,42 @@ function DataLoader:load_indices( depth_indices)
 
     local normal = torch.Tensor();    
     normal:resize(batch_size, 3, g_input_height, g_input_width); 
-
+    
+    --local mask = torch.Tensor();
+    --normal:resize(batch_size, 1, g_input_height, g_input_width);
 
     
 
     -- Read the relative depth data
+    mysum=0
     for i = 1, n_depth do    
         
         local idx = depth_indices[i]-1
-        local img_name = string.format("/color/%d.png", idx);
-        local img_name2 = string.format("/normal/%d.png", idx);
-       
+        local c =image.load(self.relative_depth_filename ..  string.format("/color/%d.png", idx));
+        local n = image.load(self.relative_depth_filename ..  string.format("/normal/%d.png", idx));
+        local m = image.load(self.relative_depth_filename ..  string.format("/mask/%d.png", idx));
+        local re
+        re = torch.norm(n,2,1)
+                                                                    
+        n[1]=torch.cdiv(n[1],re);
+                                                                    
+        n[2]=torch.cdiv(n[2],re);
+                                                                     
+        n[3]=torch.cdiv(n[3],re);
 
-        print(string.format("Loading %s", img_name))
-    
+
+        n[1]=torch.cmul(n[1],m);
+
+        n[2]=torch.cmul(n[2],m);
+        n[3]=torch.cmul(n[3],m);
+
+        --print(string.format("Loading %s", idx))
+        mysum=mysum+torch.sum(m)  
         -- read the input image
-        color[{i,{}}]:copy(image.load(self.relative_depth_filename .. img_name));    -- Note that the image read is in the range of 0~1
-        normal[{i,{}}]:copy(image.load(self.relative_depth_filename .. img_name2));  
+        color[{i,{}}]:copy(c);    -- Note that the image read is in the range of 0~1
+        normal[{i,{}}]:copy(n);
+
+        --mask[{i,{}}]:copy(image.load(self.relative_depth_filename .. m));  
 
         
     end       

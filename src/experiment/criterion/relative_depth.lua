@@ -27,11 +27,11 @@ function relative_depth_crit:updateOutput(input, target)
 
     -- the loss is the negative cos(angle)
     
-    local n_point_total = input:size(1) * input:size(3) * input:size(4)
+    --local n_point_total = input:size(1) * input:size(3) * input:size(4)
 
     self.output = - torch.sum( torch.cmul(input, target) )     -- dot product of normals , seems quite expensive move
        
-    return self.output / n_point_total
+    return self.output / mysum
 end
 
 
@@ -47,7 +47,7 @@ function relative_depth_crit:updateGradInput(input, target)
     -- the loss is the negative cos(angle)
 
 
-
+    
     -- pre-allocate memory and reset gradient to 0
     if self.gradInput then
         local nElement = self.gradInput:nElement()        
