@@ -14,7 +14,23 @@ require 'cunn'
 require 'cutorch'
 require './models/world_coord_to_normal'
 
-g_model = torch.load("/root/442project/src/results/hourglass3/new_lr_001_bs_4/model_period1_10000.t7");
+require 'io'
+
+cmd = torch.CmdLine()
+cmd:option('-p', '0', '')
+cmd:option('-i', '0', '')
+cmd:option('-e', 'new_lr_001_bs_4', '')
+
+
+g_args = cmd:parse(arg)
+
+
+
+
+print("/root/442project/src/results/hourglass3/" ..  g_args.e .."/model_period" .. g_args.p .. "_" .. g_args.i .. ".t7")
+
+
+g_model = torch.load("/root/442project/src/results/hourglass3/" ..  g_args.e .."/model_period" .. g_args.p .. "_" .. g_args.i .. ".t7");
 
 g_model:evaluate();
 
@@ -36,6 +52,11 @@ for i = 0, 1999 do
     out = g_model:forward(color:cuda());  
     im=out[{1,{}}]
     image.save("out/" .. tostring(i) .. ".png", im)
-    print(i)
 
 end
+
+
+os.execute("zip out/" .. g_args.p .. "_" .. g_args.i .. ".zip out/*.png" )
+
+os.execute("rm out/*.png")
+
