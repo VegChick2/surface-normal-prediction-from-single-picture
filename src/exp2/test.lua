@@ -43,20 +43,20 @@ color:resize(1, 4, 128, 128);
 
 for i = 0, 1999 do
 
-    c =image.load("../../data/test/color/".. tostring(i) ..".png");
-    m =image.load("../../data/test/mask/".. tostring(i) ..".png");
+    c =image.load("../../../data/test/color/".. tostring(i) ..".png");
+    m =image.load("../../../data/test/mask/".. tostring(i) ..".png");
     c=torch.cat(c,m,1)
     color[{1,{}}]:copy(c);
 
 
     out = g_model:forward(color:cuda());  
     im=out[{1,{}}]
-    image.save("out/" .. tostring(i) .. ".png", im)
+    image.save(tostring(i) .. ".png", im)
 
 end
 
 
-os.execute("zip out/" .. g_args.p .. "_" .. g_args.i .. ".zip out/*.png" )
+os.execute("zip " .. g_args.p .. "_" .. g_args.i .. ".zip *.png" )
 
-os.execute("rm out/*.png")
+os.execute("rm *.png")
 

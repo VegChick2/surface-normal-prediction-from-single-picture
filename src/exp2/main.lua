@@ -34,7 +34,7 @@ mysum=0;
 ----------to modify
 if g_args.it == 0 then
     g_args.it = g_args.ep * (20000) / g_args.bs
-    print(g_args.it)
+    print(g_args.it .. "   iters? type [cont] to continue" )
     debug.debug()
 end
 
@@ -58,6 +58,7 @@ require('./models/' .. g_args.m)
 if g_args.start_from ~= '' then
     require 'cudnn'
     print(g_args.rundir .. g_args.start_from)
+    os.execute("ls -l " .. g_args.rundir .. g_args.start_from)
     g_model = torch.load(g_args.rundir .. g_args.start_from);
     if g_model.period == nil then
         g_model.period = 1
@@ -116,6 +117,8 @@ local function save_model(model, dir, current_iter, config)
     model:clearState()        
     model.config = config
     torch.save(dir .. '/model_period'.. model.period .. '_' .. current_iter  .. '.t7' , model)
+    os.execute("ln -sf model_period" .. model.period .. '_' .. current_iter  .. '.t7 ' .. dir ..'/last.t7' )
+    os.execute("ls -l " .. dir ..'/last.t7')
 end
 
 
@@ -165,13 +168,20 @@ function myrmsprop(opfunc, x, config, state)
       print("new moment")
    end
 
+   if not state.vel then
+      state.vel = torch.Tensor():typeAs(x):resizeAs(dfdx):fill(mfill)
+      print("new vel")
+   end
+
    -- (4) calculate new (leaky) mean squared values
    state.m:mul(alpha)
    state.m:addcmul(1.0-alpha, dfdx, dfdx)
 
    -- (5) perform update
    state.tmp:sqrt(state.m):add(epsilon)
-   x:addcdiv(-lr, dfdx, state.tmp)
+   state.vel:mul(0.9)
+   state.vel:addcdiv(1, dfdx, state.tmp)
+   x:add(-lr, state.vel)
 
    -- return x*, f(x) before optimization
    return x, {fx}
