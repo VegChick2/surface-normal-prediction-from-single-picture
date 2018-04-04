@@ -6,7 +6,7 @@ require 'xlua'
 
 
 gmask=torch.Tensor();
-gmask:resize(4, 1, g_input_height, g_input_width);
+gmask:resize(g_args.bs, 1, g_input_height, g_input_width);
 
 local DataLoader = torch.class('DataLoader')
 

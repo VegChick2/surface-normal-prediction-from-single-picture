@@ -33,7 +33,9 @@ mysum=0;
 
 ----------to modify
 if g_args.it == 0 then
-    g_args.it = g_args.ep * (train_loader.n_relative_depth_sample) / g_args.bs
+    g_args.it = g_args.ep * (20000) / g_args.bs
+    print(g_args.it)
+    debug.debug()
 end
 
 -- Run path
@@ -138,8 +140,46 @@ local train_loss = {};
 
 local lfile = torch.DiskFile(g_args.rundir .. '/training_loss_period' .. g_model.period .. '.txt', 'w')
 
+function myrmsprop(opfunc, x, config, state)
+   -- (0) get/update state
+   local config = config or {}
+   local state = state or config
+   local lr = config.learningRate or 1e-2
+   local alpha = config.alpha or 0.99
+   local epsilon = config.epsilon or 1e-8
+   local wd = config.weightDecay or 0
+   local mfill = config.initialMean or 0
+
+   -- (1) evaluate f(x) and df/dx
+   local fx, dfdx = opfunc(x)
+
+   -- (2) weight decay
+   if wd ~= 0 then
+      dfdx:add(wd, x)
+   end
+
+   -- (3) initialize mean square values and square gradient storage
+   if not state.m then
+      state.m = torch.Tensor():typeAs(x):resizeAs(dfdx):fill(mfill)
+      state.tmp = torch.Tensor():typeAs(x):resizeAs(dfdx)
+      print("new moment")
+   end
+
+   -- (4) calculate new (leaky) mean squared values
+   state.m:mul(alpha)
+   state.m:addcmul(1.0-alpha, dfdx, dfdx)
+
+   -- (5) perform update
+   state.tmp:sqrt(state.m):add(epsilon)
+   x:addcdiv(-lr, dfdx, state.tmp)
+
+   -- return x*, f(x) before optimization
+   return x, {fx}
+end
+
+
 for iter = 1, g_args.it do
-    local params, current_loss = optim.rmsprop(feval, g_params, config)
+    local params, current_loss = myrmsprop(feval, g_params, config)
     print(current_loss[1])
     lfile:writeString(current_loss[1] .. '\n')
     

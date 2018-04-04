@@ -25,16 +25,21 @@ color:resize(1, 3, 128, 128);
 
 
 
-for i = 0, 1999 do
+for i = 0, 100 do
 
-    c =image.load("../../data/test/color/".. tostring(i) ..".png");
-
+    c =image.load("../../data/train/color/".. tostring(i) ..".png");
+    n =image.load("../../data/train/normal/".. tostring(i) ..".png");
+    m =image.load("../../data/train/mask/".. tostring(i) ..".png");
     color[{1,{}}]:copy(c);
 
 
     out = g_model:forward(color:cuda());  
     im=out[{1,{}}]
-    image.save("out/" .. tostring(i) .. ".png", im)
+    n=torch.cdiv(n,torch.norm(n,2,1):repeatTensor(3,1,1))
+    im=torch.acos(torch.clamp(torch.sum(torch.cmul(im, n:cuda()),1),-1,1))
+    im=im/3.15
+    im=torch.cmul(im,m:cuda())
+    image.save("out_2/" .. tostring(i) .. ".png", im)
     print(i)
 
 end
